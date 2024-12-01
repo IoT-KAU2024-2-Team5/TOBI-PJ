@@ -11,4 +11,12 @@ export const LogoContainer = styled.div`
   background-repeat: no-repeat;
   background-position: center;
   cursor: pointer;
+
+  /* Media Query for smaller screens */
+  @media (max-width: 768px) {
+    top: 60px;
+    left: 10px;
+    width: 150px; /* 크기를 축소 */
+    height: 45px;
+  }
 `
