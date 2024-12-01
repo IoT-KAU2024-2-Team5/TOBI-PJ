@@ -278,8 +278,8 @@ export const ButtonMessage = styled.div`
   bottom: 284px;
 
   @media (max-width: 768px) {
-    font-size: 24px;
-    bottom: 240px;
+    font-size: 20px;
+    bottom: 200px;
     right: 20px;
   }
 `;
