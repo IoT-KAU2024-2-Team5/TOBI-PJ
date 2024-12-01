@@ -11,4 +11,10 @@ export const CreditsContainer = styled.div`
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+
+  /* Media Query for smaller screens */
+  @media (max-width: 768px) {
+    width: 160px; /* 줄어든 너비 */
+    height: 60px; /* 줄어든 높이 */
+  }
 `

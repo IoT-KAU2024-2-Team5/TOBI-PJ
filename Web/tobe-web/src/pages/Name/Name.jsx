@@ -35,7 +35,7 @@ function Name() {
       <S.BackgroundImage src={backgroundImage} alt={plant} />
       <S.InfoContainer>
         <S.InfoMessage>나의 반려식물에게 이름을 지어주세요.</S.InfoMessage>
-        <S.InfoMessage>(미입력시 ‘토비'로 지정)</S.InfoMessage>
+        <S.InfoMessage>(미입력시 토비로 지정)</S.InfoMessage>
       </S.InfoContainer>
       <S.NameInput 
         placeholder={`나의 반려 ${plant}`}

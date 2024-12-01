@@ -32,6 +32,7 @@ export const FlowerIcon = styled.div`
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+
 `;
 
 export const FlowerText = styled.div`
@@ -41,6 +42,11 @@ export const FlowerText = styled.div`
   text-align: center;
   font-size: 20px;
   font-weight: 400;
+
+  /* Media Query for smaller screens */
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 `;
 
 export const IntroContainer = styled.div`
@@ -50,6 +56,11 @@ export const IntroContainer = styled.div`
   font-style: normal;
   font-weight: 900;
   line-height: 40px;
+
+  /* Media Query for smaller screens */
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
 `;
 
 export const TitleContainer = styled.div`
@@ -64,6 +75,11 @@ export const EngTitle = styled.div`
   font-size: 96px;
   font-style: normal;
   font-weight: 900;
+
+  /* Media Query for smaller screens */
+  @media (max-width: 768px) {
+    font-size: 72px;
+  }
 `;
 
 export const KorTitle = styled.div`
@@ -76,4 +92,9 @@ export const KorTitle = styled.div`
   font-style: normal;
   font-weight: 900;
   letter-spacing: 6.4px;
+
+  /* Media Query for smaller screens */
+  @media (max-width: 768px) {
+    font-size: 48px;
+  }
 `;
