@@ -9,7 +9,7 @@ import Plant3 from "../../assets/테이블야자.svg";
 
 function Name() {
   const navigate = useNavigate();
-  const { id, setPlantName, updatePlantData } = usePlantContext();
+  const { id, setPlantName } = usePlantContext();
 
   const plantImages = {
     산세베리아: Plant1,
@@ -23,7 +23,6 @@ function Name() {
     if (e.key === "Enter") {
       const name = e.target.value || "토비";
       setPlantName(name);
-      updatePlantData({ plantName: name, plantNameUpdatedAt: new Date().toISOString() });
       navigate("/plant");
     }
   };

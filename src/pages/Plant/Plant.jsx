@@ -1,5 +1,5 @@
 import * as S from './Plant.style';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { usePlantContext } from '../../contexts/PlantContext.jsx';
 import Plant1 from '../../assets/산세베리아.svg';
 import Plant2 from '../../assets/스킨답서스.svg';
@@ -14,13 +14,8 @@ function Plant() {
     led,
     setLed,
     mode,
-    setMode,
     humidity,
     brightness,
-    plantNameUpdatedAt,
-    setPlantNameUpdatedAt,
-    fetchPlantData,
-    updatePlantData,
   } = usePlantContext();
 
   const plantImages = {
@@ -32,26 +27,14 @@ function Plant() {
   const plantImage = plantImages[id];
 
   const calculateDateCount = () => {
-    if (!plantNameUpdatedAt) return 0;
-    const creationDate = new Date(plantNameUpdatedAt);
+    // 기본 날짜 차이는 0일로 설정
+    const creationDate = new Date();
     const currentDate = new Date();
     const timeDiff = currentDate - creationDate;
     return Math.floor(timeDiff / (1000 * 60 * 60 * 24));
   };
 
   const dateCount = calculateDateCount();
-
-  useEffect(() => {
-    fetchPlantData(); // /plant로 이동시 요청
-  }, [fetchPlantData]);
-
-  useEffect(() => {
-    if (!plantNameUpdatedAt) {
-      const now = new Date().toISOString();
-      setPlantNameUpdatedAt(now);
-      updatePlantData({ plantNameUpdatedAt: now });
-    }
-  }, [plantNameUpdatedAt, setPlantNameUpdatedAt, updatePlantData]);
 
   const [messages, setMessages] = useState([]);
   const messageTexts = [
@@ -75,15 +58,6 @@ function Plant() {
     setMessageIndex((prevIndex) => (prevIndex + 1) % messageTexts.length);
   };
 
-  useEffect(() => {
-    const timers = messages.map((message) =>
-      setTimeout(() => {
-        setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
-      }, 5000)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, [messages]);
-
   return (
     <S.PlantWrapper>
       <Status ledValue={led} plant={id} username={plantName} />
@@ -102,7 +76,7 @@ function Plant() {
           <S.DeathIcon /> 식물이 시들었어요
         </S.DeathContainer>
       </S.IconsContainer>
-      <Control ledValue={led} setLed={setLed} />
+      <Control ledValue={led} setLedValue={setLed} />
       <S.MessageContainer>
         {messages.map((message) => (
           <S.MessageBubble key={message.id} isVisible>

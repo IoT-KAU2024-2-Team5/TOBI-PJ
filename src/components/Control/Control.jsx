@@ -3,49 +3,38 @@ import { useState } from 'react';
 import { usePlantContext } from '../../contexts/PlantContext.jsx';
 
 function Control({ ledValue, setLedValue }) {
-  const { mode, setMode, updatePlantData, fetchPlantData } = usePlantContext();
+  const { mode, setMode } = usePlantContext();
 
   const [buttonState, setButtonState] = useState({ isWatering: false, isRefreshing: false });
   const [buttonMessage, setButtonMessage] = useState('');
   const [isMessageVisible, setIsMessageVisible] = useState(false);
 
   const handleSliderChange = (e) => {
-    if (mode === 'auto') return; 
+    if (mode === 'auto') return;
     const newLedValue = parseInt(e.target.value, 10);
     setLedValue(newLedValue);
-    updatePlantData({ led: newLedValue, ledUpdatedAt: new Date().toISOString() });
   };
 
-  const handleButtonClick = async (type) => {
-    if (mode === 'auto') return; 
-    if (type === 'water') {
-      setButtonState({ ...buttonState, isWatering: true });
-      setButtonMessage('물 주는 중 ...');
-      await updatePlantData({ pump: true, pumpUpdatedAt: new Date().toISOString() });
-    } else if (type === 'refresh') {
-      setButtonState({ ...buttonState, isRefreshing: true });
-      setButtonMessage('새로고침 중 ...');
-      await fetchPlantData(); 
-    }
+  const handleButtonClick = (type) => {
+    if (mode === 'auto') return;
 
+    setButtonState((prev) => ({
+      ...prev,
+      [type === 'water' ? 'isWatering' : 'isRefreshing']: true,
+    }));
+
+    setButtonMessage(type === 'water' ? '물 주는 중 ...' : '새로고침 중 ...');
     setIsMessageVisible(true);
 
     setTimeout(() => {
       setIsMessageVisible(false);
-      if (type === 'water') {
-        updatePlantData({ pump: false });
-      }
-      setTimeout(() => {
-        setButtonState({ isWatering: false, isRefreshing: false });
-        setButtonMessage('');
-      }, 500);
+      setButtonState({ isWatering: false, isRefreshing: false });
+      setButtonMessage('');
     }, 3000);
   };
 
   const toggleMode = () => {
-    const newMode = mode === 'auto' ? 'manual' : 'auto';
-    setMode(newMode);
-    updatePlantData({ mode: newMode });
+    setMode((prev) => (prev === 'auto' ? 'manual' : 'auto'));
   };
 
   return (

@@ -1,13 +1,13 @@
 import * as S from './Status.style';
-import { usePlantContext } from '../../contexts/PlantContext.jsx';
 import ledIcon from '../../assets/led.png';
 import sunIcon from '../../assets/sun.png';
 import waterIcon from '../../assets/water.png';
+import { usePlantContext } from '../../contexts/PlantContext.jsx';
 
 function Status({ ledValue, plant, username }) {
-  const { humidity, brightness, led } = usePlantContext();
+  const { humidity, brightness } = usePlantContext();
 
-  const ledFigure = Math.min(10, Math.floor(led / 10) + 1);
+  const ledFigure = Math.min(10, Math.floor(ledValue / 10) + 1);
 
   return (
     <S.StatusContainer>
