@@ -19,19 +19,20 @@ function Control({ ledValue, setLedValue, data }) {
   const handleButtonClick = (type) => {
     if (mode === 'auto') return;
 
+    // 상태를 토글
     setButtonState((prev) => ({
-      ...prev,
-      [type === 'water' ? 'isWatering' : 'isRefreshing']: true,
+        ...prev,
+        [type === 'water' ? 'isWatering' : 'isRefreshing']: !prev[type === 'water' ? 'isWatering' : 'isRefreshing'],
     }));
 
-    setButtonMessage(type === 'water' ? '물 주는 중 ...' : '새로고침 중 ...');
-    setIsMessageVisible(true);
+    // 버튼 상태에 따라 메시지 설정
+    if (type === 'water') {
+        setButtonMessage(buttonState.isWatering ? '' : '물 주는 중 ...');
+    } else {
+        setButtonMessage(buttonState.isRefreshing ? '' : '새로고침 중 ...');
+    }
 
-    setTimeout(() => {
-      setIsMessageVisible(false);
-      setButtonState({ isWatering: false, isRefreshing: false });
-      setButtonMessage('');
-    }, 3000);
+    setIsMessageVisible(!buttonState[type === 'water' ? 'isWatering' : 'isRefreshing']);
   };
 
   const toggleMode = () => {
