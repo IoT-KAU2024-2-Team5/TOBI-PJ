@@ -9,6 +9,9 @@ function Status({ ledValue, plant, data }) {
   const brightness = data?.brightness ?? 0;
   const ledFigure = Math.min(10, Math.floor(ledValue / 10) + 1);
 
+  // mode에 따라 표시할 단계 결정
+  const ledDisplay = data?.mode === "auto" ? `${data.led}` : `${ledFigure}`;
+
   return (
     <S.StatusContainer>
       <S.Container>
@@ -25,7 +28,7 @@ function Status({ ledValue, plant, data }) {
         <S.Status>
           <S.StatusIcon imageUrl={ledIcon} />
           <S.StatusTitle>LED:</S.StatusTitle>
-          <S.StatusFigureStrong>{ledFigure}단계</S.StatusFigureStrong>
+          <S.StatusFigureStrong>{ledDisplay}단계</S.StatusFigureStrong>
         </S.Status>
       </S.Container>
       <S.Container2>
