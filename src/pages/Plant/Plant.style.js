@@ -2,6 +2,9 @@ import styled, { keyframes, css } from 'styled-components';
 import bubble from '../../assets/messageBg.svg';
 import Death from '../../assets/Deathicon.svg';
 import Tip from '../../assets/Tipicon.svg';
+import Tip1 from '../../assets/Tip1.svg';
+import Tip2 from '../../assets/Tip2.svg';
+import Tip3 from '../../assets/Tip3.svg';
 
 export const IconsContainer = styled.div`
   position: absolute;
@@ -62,6 +65,19 @@ export const TipIcon = styled.div`
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+`;
+
+export const TipCard = styled.div`
+  position: absolute;
+  top: 96px;
+  right: 36px;
+  width: 450px;
+  height: 350px;
+  background-image: ${(props) => `url(${props.tipImage})`};
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 5;
 `;
 
 export const PlantWrapper = styled.div`
