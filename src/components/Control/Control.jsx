@@ -16,23 +16,120 @@ function Control({ ledValue, setLedValue, data }) {
     setLedValue(newLedValue);
   };
 
-  const handleButtonClick = (type) => {
+  const fetchAllDatas = async () => {
+    try {
+      const response = await fetch('https://www.tobe-server.o-r.kr/api/datas', {
+        method: 'GET', // GET 메서드
+        headers: {
+          'Content-Type': 'application/json', // 응답 데이터 타입 지정
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json(); // JSON 데이터를 파싱
+      console.log('Fetched Data:', data); // 데이터 출력
+
+      // 데이터를 localStorage에 저장
+      data.forEach(item => {
+        const key = `${item.id}_${item.mode}`; // 키 생성
+        localStorage.setItem(key, JSON.stringify(item)); // 데이터 저장
+      });
+
+      return data; // 데이터 반환
+    } catch (error) {
+      console.error('Error fetching all datas:', error);
+    }};
+
+  const sendApiRequest = async (isWatering) => {
+    const requestBody = {
+        id,
+        mode: "manual",
+        humidity: data.humidity,
+        humidityUpdatedAt: data.humidityUpdatedAt,
+        led: ledValue,
+        ledUpdatedAt: data.ledUpdatedAt,
+        pump: isWatering, // isWatering 상태를 전송
+        pumpUpdatedAt: data.pumpUpdatedAt,
+        brightness: data.brightness,
+        brightnessUpdatedAt: data.brightnessUpdatedAt,
+        plantName,
+        plantNameUpdatedAt: data.plantNameUpdatedAt,
+    };
+
+    try {
+        const response = await fetch(`https://www.tobe-server.o-r.kr/api/datas/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Success:', result);
+        setIsMessageVisible(true);
+
+        setTimeout(() => setIsMessageVisible(false), 3000);
+    } catch (error) {
+        console.error('Failed to send API request:', error);
+        setIsMessageVisible(true);
+
+        setTimeout(() => setIsMessageVisible(false), 3000);
+    }
+};
+
+
+  const handleButtonClick = async (type) => {
     if (mode === 'auto') return;
 
-    // 상태를 토글
+  if (type === 'refresh') {
     setButtonState((prev) => ({
-        ...prev,
-        [type === 'water' ? 'isWatering' : 'isRefreshing']: !prev[type === 'water' ? 'isWatering' : 'isRefreshing'],
+      ...prev,
+      isRefreshing: true,
     }));
 
-    // 버튼 상태에 따라 메시지 설정
-    if (type === 'water') {
-        setButtonMessage(buttonState.isWatering ? '' : '물 주는 중 ...');
-    } else {
-        setButtonMessage(buttonState.isRefreshing ? '' : '새로고침 중 ...');
-    }
+    setButtonMessage('새로고침 중 ...');
+    setIsMessageVisible(true);
 
-    setIsMessageVisible(!buttonState[type === 'water' ? 'isWatering' : 'isRefreshing']);
+    // 새로고침 동작 실행
+    await fetchAllDatas();
+
+    // 3초 후 버튼 활성화
+    setTimeout(() => {
+      setButtonState((prev) => ({
+        ...prev,
+        isRefreshing: false,
+      }));
+    }, 3000);
+
+    setTimeout(() => {
+      setIsMessageVisible(false);
+    }, 3000);
+  } else if (type === 'water') {
+    // 기존 물주기 버튼 동작
+    const newState = !buttonState.isWatering;
+    setButtonState((prev) => ({
+      ...prev,
+      isWatering: newState,
+    }));
+
+    setButtonMessage(newState ? '물 주는 중 ...' : '물 주기 취소...');
+    setIsMessageVisible(true);
+
+    // API 요청 실행
+    await sendApiRequest(newState);
+
+    setTimeout(() => {
+      setIsMessageVisible(false);
+    }, 3000);
+  }
   };
 
   const toggleMode = () => {
