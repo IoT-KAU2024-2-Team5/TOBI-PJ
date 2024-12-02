@@ -2,11 +2,11 @@ import * as S from './Status.style';
 import ledIcon from '../../assets/led.png';
 import sunIcon from '../../assets/sun.png';
 import waterIcon from '../../assets/water.png';
-import { usePlantContext } from '../../contexts/PlantContext.jsx';
 
-function Status({ ledValue, plant, username }) {
-  const { humidity, brightness } = usePlantContext();
-
+function Status({ ledValue, plant, data }) {
+  // `null`일 경우 기본값을 0으로 설정
+  const humidity = data?.humidity ?? 0;
+  const brightness = data?.brightness ?? 0;
   const ledFigure = Math.min(10, Math.floor(ledValue / 10) + 1);
 
   return (

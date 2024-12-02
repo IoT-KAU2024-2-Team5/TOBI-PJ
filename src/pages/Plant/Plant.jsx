@@ -1,5 +1,5 @@
 import * as S from './Plant.style';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePlantContext } from '../../contexts/PlantContext.jsx';
 import Plant1 from '../../assets/산세베리아.svg';
 import Plant2 from '../../assets/스킨답서스.svg';
@@ -14,9 +14,53 @@ function Plant() {
     led,
     setLed,
     mode,
-    humidity,
-    brightness,
   } = usePlantContext();
+
+  const [plantData, setPlantData] = useState(null);
+
+  useEffect(() => {
+    const fetchAllDatas = async () => {
+      try {
+        const response = await fetch('https://www.tobe-server.o-r.kr/api/datas', {
+          method: 'GET', // GET 메서드
+          headers: {
+            'Content-Type': 'application/json', // 응답 데이터 타입 지정
+          },
+        });
+    
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    
+        const data = await response.json(); // JSON 데이터를 파싱
+        console.log('Fetched Data:', data); // 데이터 출력
+
+        // 데이터를 localStorage에 저장
+        data.forEach(item => {
+          const key = `${item.id}_${item.mode}`; // 키 생성
+          localStorage.setItem(key, JSON.stringify(item)); // 데이터 저장
+        });
+
+        return data; // 데이터 반환
+      } catch (error) {
+        console.error('Error fetching all datas:', error);
+      }
+    };
+    
+    // 함수 호출 예시
+    fetchAllDatas();
+
+    
+  }, []);
+
+  useEffect(() => {
+    if (id && mode) {
+      const storedData = localStorage.getItem(`${id}_${mode}`);
+      if (storedData) {
+        setPlantData(JSON.parse(storedData));
+      }
+    }
+  }, [id, mode]);
 
   const plantImages = {
     산세베리아: Plant1,
@@ -60,7 +104,11 @@ function Plant() {
 
   return (
     <S.PlantWrapper>
-      <Status ledValue={led} plant={id} username={plantName} />
+      <Status
+        ledValue={led}
+        plant={id}
+        data={plantData} // 로컬스토리지에서 가져온 데이터를 전달
+      />
       <S.PotContainer>
         <S.PotInfo>
           <S.Username>{plantName}</S.Username>
