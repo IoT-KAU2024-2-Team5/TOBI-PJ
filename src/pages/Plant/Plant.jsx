@@ -124,7 +124,7 @@ function Plant() {
           <S.DeathIcon /> 식물이 시들었어요
         </S.DeathContainer>
       </S.IconsContainer>
-      <Control ledValue={led} setLedValue={setLed} />
+      <Control ledValue={led} setLedValue={setLed} data={plantData} />
       <S.MessageContainer>
         {messages.map((message) => (
           <S.MessageBubble key={message.id} isVisible>
