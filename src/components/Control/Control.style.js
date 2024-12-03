@@ -1,9 +1,9 @@
 import styled, { keyframes } from 'styled-components';
-import ControlBoard from '../../assets/ControlBoard.svg';
-import SwitchAuto from '../../assets/Switch_auto.svg';
-import SwitchIot from '../../assets/Switch_iot.svg';
-import ButtonOn from '../../assets/Btn_pressed.svg';
-import ButtonOff from '../../assets/Btn_default.svg';
+import ControlBoard from '../../assets/ControlBoard.png';
+import SwitchAuto from '../../assets/Switch_auto.png';
+import SwitchIot from '../../assets/Switch_iot.png';
+import ButtonOn from '../../assets/Btn_pressed.png';
+import ButtonOff from '../../assets/Btn_default.png';
 import LedSteps from '../../assets/Steps.png';
 
 export const ControlContainer = styled.div`

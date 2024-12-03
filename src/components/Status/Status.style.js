@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import StatBoard from '../../assets/StatBoard.svg';
+import StatBoard from '../../assets/StatBoard.png';
 
 export const StatusContainer = styled.div`
   font-family: Pretendard;

@@ -1,7 +1,7 @@
 import styled, { keyframes, css } from 'styled-components';
-import bubble from '../../assets/messageBg.svg';
-import Death from '../../assets/Deathicon.svg';
-import Tip from '../../assets/Tipicon.svg';
+import bubble from '../../assets/messageBg.png';
+import Death from '../../assets/Deathicon.png';
+import Tip from '../../assets/Tipicon.png';
 
 export const IconsContainer = styled.div`
   position: absolute;

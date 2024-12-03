@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePlantContext } from "../../contexts/PlantContext.jsx";
 import Credits from "../../components/Credits/Credits";
 import LogoNav from "../../components/LogoNav/LogoNav";
-import Icon from "../../assets/infoicon.svg";
+import Icon from "../../assets/infoicon.png";
 import Plant1 from "../../assets/산세베리아.svg";
 import Plant2 from "../../assets/스킨답서스.svg";
 import Plant3 from "../../assets/테이블야자.svg";
