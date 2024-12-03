@@ -4,9 +4,9 @@ import { usePlantContext } from '../../contexts/PlantContext.jsx';
 import Plant1 from '../../assets/산세베리아.svg';
 import Plant2 from '../../assets/스킨답서스.svg';
 import Plant3 from '../../assets/테이블야자.svg';
-import Tip1 from '../../assets/Tip1.svg';
-import Tip2 from '../../assets/Tip2.svg';
-import Tip3 from '../../assets/Tip3.svg';
+import Tip1 from '../../assets/Tip1.png';
+import Tip2 from '../../assets/Tip2.png';
+import Tip3 from '../../assets/Tip3.png';
 import Control from '../../components/Control/Control';
 import Status from '../../components/Status/Status';
 
