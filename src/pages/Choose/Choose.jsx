@@ -22,9 +22,7 @@ function Choose() {
       <Credits />
       <LogoNav />
       <S.InfoContainer>
-        <S.InfoIcon>
-          <img src={Icon} />
-        </S.InfoIcon>
+        <S.InfoIcon />
         <S.InfoMessage>나의 반려식물과 가장 비슷한 화분을 골라주세요.</S.InfoMessage>
       </S.InfoContainer>
       <S.PlantChoices>

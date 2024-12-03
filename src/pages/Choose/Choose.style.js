@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import Icon from "../../assets/infoicon.png";
 
 export const ChooseWrapper = styled.div`
   font-family: Pretendard;
@@ -31,6 +32,10 @@ export const InfoIcon = styled.div`
   width: 40px;
   height: 40px;
   flex-shrink: 0;
+  background-image: url(${Icon});
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 
   /* Media Query for smaller screens */
   @media (max-width: 768px) {
