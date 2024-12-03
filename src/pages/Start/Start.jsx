@@ -6,6 +6,7 @@ import Credits from '../../components/Credits/Credits';
 function Start() {
   const navigate = useNavigate();
   const { id, plantName, led, mode } = usePlantContext();
+  
 
   const handleNavigate = () => {
     navigate('/choose');

@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext } from "react";
+/* eslint-disable react/prop-types */
 
 const PlantContext = createContext();
 
@@ -23,8 +24,11 @@ export const PlantProvider = ({ children }) => {
     mode,
     setMode,
     humidity,
+    setHumidity,
     brightness,
+    setBrightness,
     pump,
+    setPump,
   };
 
   return <PlantContext.Provider value={value}>{children}</PlantContext.Provider>;

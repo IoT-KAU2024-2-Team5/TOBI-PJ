@@ -238,7 +238,7 @@ export const LedSlider = styled.input`
   background: ${(props) =>
     props.isDisabled
       ? '#1FAA67'
-      : `linear-gradient(to right, #1A1A1A ${props.value}%, #1FAA67 ${props.value}%)`};
+      : `linear-gradient(to right, #1A1A1A ${props.value}%, #1FAA67 ${props.value*20}%)`};
   border-radius: 5px;
   outline: none;
   cursor: ${(props) => (props.isDisabled ? 'not-allowed' : 'pointer')};

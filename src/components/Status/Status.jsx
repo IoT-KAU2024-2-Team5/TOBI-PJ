@@ -1,13 +1,18 @@
+/* eslint-disable react/prop-types */
 import * as S from './Status.style';
 import ledIcon from '../../assets/led.png';
 import sunIcon from '../../assets/sun.png';
 import waterIcon from '../../assets/water.png';
-import { usePlantContext } from '../../contexts/PlantContext.jsx';
+import { usePlantContext } from '../../contexts/PlantContext';
 
-function Status({ ledValue, plant, username }) {
-  const { humidity, brightness } = usePlantContext();
+function Status({ plant, data, ledValue }) {
+  // `null`일 경우 기본값을 0으로 설정
+  const humidity = data?.humidity ?? 0;
+  const brightness = data?.brightness ?? 0;
+  const { mode } = usePlantContext();
 
-  const ledFigure = Math.min(10, Math.floor(ledValue / 10) + 1);
+  // mode에 따라 표시할 단계 결정
+  const ledDisplay = mode === "auto" ? `${data?.led}` : `${ledValue}`;
 
   return (
     <S.StatusContainer>
@@ -25,7 +30,7 @@ function Status({ ledValue, plant, username }) {
         <S.Status>
           <S.StatusIcon imageUrl={ledIcon} />
           <S.StatusTitle>LED:</S.StatusTitle>
-          <S.StatusFigureStrong>{ledFigure}단계</S.StatusFigureStrong>
+          <S.StatusFigureStrong>{ledDisplay}단계</S.StatusFigureStrong>
         </S.Status>
       </S.Container>
       <S.Container2>
