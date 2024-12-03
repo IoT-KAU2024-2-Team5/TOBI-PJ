@@ -8,6 +8,7 @@
 #include <Adafruit_SH1106.h>
 #include <Adafruit_NeoPixel.h>
 #include "time.h"
+#include <EEPROM.h>
 
 #define OLED_MOSI       13
 #define OLED_CLK        14
@@ -16,8 +17,8 @@
 #define OLED_RESET      27
 
 #define PIN_NEOPIXEL    21  // 네오픽셀 데이터 핀
-#define NUMPIXELS       16  // 네오픽셀 LED 개수
-#define CDS_PIN         23  // CDS 센서 핀
+#define NUMPIXELS       12  // 네오픽셀 LED 개수
+#define CDS_PIN         35  // CDS 센서 핀
 #define BUTTON_PIN      15  // 버튼 핀
 #define SOIL_SENSOR_PIN 34  // 흙 센서 핀
 #define MOTOR_A_PIN     18  // 모터 드라이브 A 핀 (ESP32 GPIO 18으로 설정)
@@ -25,15 +26,15 @@
 
 #define HUMID_MAX       4095
 #define HUMID_MIN       0
-#define pumpInterval    10000
-#define STEPS           5
+#define pumpInterval    3000
+#define STEPS           10
 
 
 Adafruit_SH1106 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
 
 unsigned long lastSoilPublish = 0;
-const long soilSensorInterval = 20000; // 흙 센서 읽을 주기
+const long soilSensorInterval = 14000; // 흙 센서 읽을 주기
 
 
 AWS_IOT SoilSensor; // AWS 세팅
@@ -59,13 +60,13 @@ const char* password = "88880000";
 int soilhumid = 0;
 int humidity = 0;
 int brightness = 0;
-bool pump = true;
+int pump = 0;
 int led = 0;
 
 String modes = "auto";
 String lastWateringTime = "";
 
-const unsigned int motorCycle = 3000;
+const unsigned int motorCycle = 2000;
 unsigned long lastPump = 0;
 unsigned long pumpRunTime = 0;
 unsigned long pumpStartTime = 0;
@@ -74,13 +75,13 @@ bool buttonFlag = false;
 
 void setup() {
     Serial.begin(115200);
-    oled_init();
     wifi_init();
     aws_init();
     led_init();
     motor_init();
     watertime_init();
-    delay(2000);
+    oled_init();
+    delay(100);
 
     Serial.println("ESP32 Setting Clear!");
 }
@@ -91,55 +92,27 @@ void loop() {
     if(msgReceived == 1) {
         Serial.print("ESP32 Get Delta, ");
         msgReceived = 0;
-
         JSONVar shadowMsg = JSON.parse(rcvdPayload);
         Serial.println(rcvdPayload);
         JSONVar state = shadowMsg["state"];
-        String deltaMode = state["mode"];
-        
-        if (deltaMode == "auto") { // auto 모드로 변경
-            modes = "auto"; 
-            Serial.println("Auto Mode!");
-        }
-        else if (deltaMode == "manual") {
-            modes = "manual";
-            Serial.println("Manual Mode!");
-            if(state.hasOwnProperty("pump")) pump = state["pump"];
-            if(state.hasOwnProperty("led")) led = state["led"];
-            Serial.print("Pump Value : ");
-            Serial.println(pump);
-            Serial.print("Led Value : ");
-            Serial.println(led);
-
-        }
-        else { // 모드가 변경되지 않는 경우
-            Serial.println("No Mode Change");
-            if(state.hasOwnProperty("pump")) pump = state["pump"];
-            if(state.hasOwnProperty("led")) led = state["led"];
-            Serial.print("Pump Value : ");
-            Serial.println(pump);
-            Serial.print("Led Value : ");
-            Serial.println(led);
-        }
-
+        pump = state["pump"];
+        led = state["led"];
         brightness_process(); // 메시지가 올 때 마다 led 값을 갱신할 수 있음
+        Serial.println("======");
+        Serial.println(pump);
+        Serial.println(led);
     }
 
-    if (modes == "auto" && millis() - lastPump > pumpInterval && pumpFlag == false) { // 일정시간마다 펌프를 시작
-        lastPump = millis(); // 람다로 보내기 위해 추가 퍼블리싱 필요
-        pumpFlag = true; // 펌프 ON
-        pumpStartTime = millis(); // 펌프 타이머 시작
-        Serial.println("Auto Motor Start!");
-        startMotor();
-    }
-
-    
-    if (modes == "manual" && millis() - lastPump > pumpInterval && pumpFlag == true ) {
+    if (pumpFlag == false && pump == true) {
         lastPump = millis();
-        // pumpFlag = pump; // critical section...?, 사용자가 보낸 메시지의 pump(true)에 따라 동작
-        pumpStartTime = millis();
-        Serial.println("Manual Motor Start!");
-        startMotor();
+        if (pump == true && pumpFlag == false) {
+            pumpFlag = true; // 펌프 ON
+            pumpStartTime = millis(); // 펌프 타이머 시작
+            Serial.println("Auto Motor Start!");
+            startMotor();
+        } else {
+            Serial.println("Auto Mode: Pump is off, motor not started.");
+        }
     }
 
 
@@ -147,13 +120,23 @@ void loop() {
         Serial.println("Motor Stop!");
         stopMotor();
         update_watering_time();
-        oled_process(); // oled 처리 프로세스
         pumpFlag = false;
+        pump =false;
+    }
+
+    // 펌프가 비활성화 상태일 때 모터 강제 중단 (안전장치)
+    if (pump == false && pumpFlag == true) {
+        Serial.println("Pump deactivated. Stopping motor.");
+        stopMotor();               // 모터 중단
+        pumpFlag = false;          // 플래그 초기화
     }
 
 
-    if (modes == "auto" && millis() - lastSoilPublish > soilSensorInterval) { // auto mode에서 타이머가 발생하는 경우
-        soilhumid = normalization(analogRead(SOIL_SENSOR_PIN)); // 0 ~ 4095 -> 정규화 필요
+    if (millis() - lastSoilPublish > soilSensorInterval) { // auto mode에서 타이머가 발생하는 경우
+        soilhumid = normalization(analogRead(SOIL_SENSOR_PIN));
+        Serial.print("SSSS : ");
+        Serial.println(analogRead(SOIL_SENSOR_PIN));
+        Serial.println(normalization(analogRead(SOIL_SENSOR_PIN)));
         brightness = analogRead(CDS_PIN);  // CDS 센서 값 읽기
         Serial.print("Soil Humid : ");
         Serial.print(soilhumid);
@@ -162,24 +145,18 @@ void loop() {
         Serial.println(brightness);
 
         // payload 생성
-        sprintf(payload, "{ \"state\" : { \"reported\" : { \"id\": \"%s\", \"humidity\": %d, \"brightness\" : %d, \"pump\" : %d, \"led\" : %d } } }", 
-        "산세베리아", soilhumid, brightness, pump, led);
+        sprintf(payload, "{ \"state\" : { \"reported\" : { \"humidity\": %d, \"brightness\" : %d } } }", 
+        soilhumid, brightness, pump, led);
         Serial.println(payload);
         
         if(SoilSensor.publish(pTOPIC_NAME, payload) == 0) {
-            Serial.print("ESP32 Publish Message :");
+            Serial.println("ESP32 Publish Message");
         } else {
             Serial.println("ESP32 Publish failed");
         }
         lastSoilPublish = millis();
     }
-
-    if (modes == "manual") { // 람다에서 쉐도우를 수정해서 발생하는 델타를 이용하여 작업을 수행
-        // 밝기 작업
-        pixels.setBrightness(led);  // 밝기를 br 값으로 설정
-        pixels.show();  // 네오픽셀 업데이트
-
-    }
+    oled_process(); // oled 처리 프로세스
 }
 
 
@@ -206,7 +183,7 @@ void stopMotor() {
     delay(10);
 }
 
-
+// Led 초기화
 void led_init(void) {
     pixels.begin();
     for (int i = 0; i < NUMPIXELS; i++) {
@@ -236,6 +213,9 @@ void oled_init(void) {
     display.println("Initializing...");
     display.display();
     delay(10);
+
+    soilhumid = normalization(analogRead(SOIL_SENSOR_PIN));
+    oled_process();
 }
 
 void wifi_init(void) {
@@ -256,7 +236,7 @@ void wifi_init(void) {
     }
     
     Serial.println("Connected to WiFi");
-    delay(1000);
+    delay(500);
 }
 
 void aws_init(void) {
@@ -264,7 +244,7 @@ void aws_init(void) {
     if (SoilSensor.connect(HOST_ADDRESS, CLIENT_ID) == 0) {
         Serial.println("Connected to AWS");
         delay(1000);
-        if(0==SoilSensor.subscribe(sTOPIC_NAME,mySubCallBackHandler)) {
+        if(0 == SoilSensor.subscribe(sTOPIC_NAME,mySubCallBackHandler)) {
             Serial.println("Subscribe Successfull");    
         }
         else {
@@ -272,21 +252,22 @@ void aws_init(void) {
             while(1);
         }
     }
-        else {
+    else {
         Serial.println("AWS connection failed, Check the HOST Address");
         while(1);
     }
 }
 
+
 void watertime_init(void) {
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-      Serial.println("Failed to obtain time");
-      return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-  Serial.println("Year: " + String(timeinfo.tm_year+1900) + ", Month: " + String(timeinfo.tm_mon+1));
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    struct tm timeinfo; // config 단계에서 시간을 확인
+    if (!getLocalTime(&timeinfo)) {
+        lastWateringTime = "00:00:00";
+        Serial.println("Failed to obtain time");
+        return;
+    }
+    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
 
@@ -294,10 +275,11 @@ void update_watering_time(void) {
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
         char timeString[32];
-        strftime(timeString, sizeof(timeString), "%d:%H:%M", &timeinfo); // HH:MM:SS
+        strftime(timeString, sizeof(timeString), "%d:%H:%M", &timeinfo); // DD:HH:MM
         lastWateringTime = String(timeString);
         Serial.print("Last Watering Time Recorded: ");
         Serial.println(lastWateringTime);
+        Serial.println("=================");
     } else {
         Serial.println("Failed to get time for Last Watering.");
     }
@@ -312,21 +294,27 @@ void oled_process(void) {
     display.print("Soil Humid : ");
     display.print(soilhumid);
     display.println("%");
-    display.print("brightness : ");
-    display.println(brightness);
+    display.print("Led Level  : ");
+    display.println(led);
     display.print("Watering ");
     display.println(lastWateringTime);
     display.display();
 }
 
+
 void brightness_process(void) {
-    int br_setup = constrain(led * 255 / STEPS, 0, 255);
-    Serial.println(br_setup);
+    //int br_setup = constrain(led * 255 / STEPS, 0, 255);
+    //Serial.println(br_setup);
     Serial.println("Call Led Control");
-    for (int i = 0; i < NUMPIXELS; i++) {
-        pixels.setPixelColor(i, pixels.Color(br_setup, br_setup, br_setup));
+     for (int i = 0; i < NUMPIXELS; i++) {
+        if (i < led) {
+            pixels.setPixelColor(i, pixels.Color(255, 255, 255));
+        } else {
+            pixels.setPixelColor(i, pixels.Color(0, 0, 0));  // 나머지 LED는 끄기
+        }
     }
     pixels.show();  // 네오픽셀 업데이트
+    delay(50);
 }
 
 
